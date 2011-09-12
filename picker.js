@@ -20,7 +20,7 @@ var Picker = (function() {
         var len = input.length;
         var n = 0;
         for (var i = 0; i < len; i += 1) {
-            output[i] = n === 2 ? b : input[i];
+            output[i] = n === 0 ? b : input[i];
             n = n === 3 ? 0 : n + 1;
         }
         return shadeImg;
@@ -42,7 +42,7 @@ var Picker = (function() {
         for (var i = 0; i < 255; i++) {
             tmpC.save();
             for (var j = 0; j < 255; j++) {
-                var color = 'rgb(' + i + ', ' + j + ', ' + b + ')';
+                var color = 'rgb(' + b + ', ' + j + ', ' + i + ')';
                 tmpC.fillStyle = color;
                 tmpC.fillRect(0, 0, 1, 1);
                 tmpC.translate(1, 0);
@@ -69,13 +69,21 @@ var Picker = (function() {
             canvas = document.getElementById(canvasId);
             c = canvas.getContext('2d');
 
-            slider.addEventListener('change', changeColors, false);
-
             canvas.width = cWidth;
             canvas.height = cHeight;
 
             createPicker(initValue);
             createShades();
+            
+            var n = 0;
+            var m = -1;
+            setInterval(function(){
+              console.log(n)
+              putImageOnCanvas(shades[n]);
+              m = n === 0 ? -1 : n === 255 ? 256 : m;
+              modifier = m < n ? 1 : -1;
+              n+= modifier; m+=modifier;
+            }, 10)
         }
     }
 })();
