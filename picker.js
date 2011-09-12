@@ -78,7 +78,6 @@ var Picker = (function() {
             var n = 0;
             var m = -1;
             setInterval(function(){
-              console.log(n)
               putImageOnCanvas(shades[n]);
               m = n === 0 ? -1 : n === 255 ? 256 : m;
               modifier = m < n ? 1 : -1;
