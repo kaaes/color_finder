@@ -1,0 +1,32 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+	<meta charset="utf-8"/> 
+	<title>Canvas Color Rotor</title>
+  <link href='http://fonts.googleapis.com/css?family=Andika' rel='stylesheet' type='text/css'>	
+	<style type="text/css">
+	body {font-family: Andika, sans-serif; font-size: 1.5em; text-shadow: .1em .1em 0 #ddd; color: #333; background: #fffff0}
+  #content {width: 600px; margin: 0 auto; position: relative; text-align: center}
+  #canvas, #slider {display: block; margin: 0 auto; box-shadow: 0 0 0 2px rgba(255,255,240,1), 0 0 0 3px rgba(0,0,0,.3), 0 0 10px rgba(0,0,0,.5); border-radius: 3px}
+  #canvas {width: 400px; height: 400px; background: #fff}
+  #slider {width: 100%; margin-top: 30px}
+  h1 {font-size: 2em; text-transform: uppercase; margin-bottom: 0}
+  h2 {margin-top: 0}
+  a {color: steelblue}
+  .info {font-size: .7em}
+  </style>
+</head>  
+<body> 
+  <div id="content">
+    <h1>See? No pictures!</h1>
+    <canvas id="canvas"></canvas> 
+    <input id="slider" type="range" name="s" max="255" min="0" value="0"> 
+    <p>use slider to change shade (webkit browsers)</p>
+    <p class="info">by <a href="http://twitter.com/kaaes">@kaaes</a></p>
+  </div>
+  <script src="picker.js"></script>
+  <script type="text/javascript">
+    Picker.init();
+  </script>  
+</body> 
+</html> 
