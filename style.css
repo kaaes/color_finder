@@ -3,7 +3,9 @@ body {
   font-size: 1.5em; 
   text-shadow: .1em .1em 0 #ddd; 
   color: #333; 
-  background: #fffff0 url('grunge2.jpg')}
+  background: #fffff0 url('grunge2.jpg')
+}
+canvas:focus {outline: 1;}
 #content {margin: 0 auto; position: relative; padding: 0 2em}
 #slider-c, #canvas-m {
   display: block; 

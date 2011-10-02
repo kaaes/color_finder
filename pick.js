@@ -1,5 +1,5 @@
 var Picker = (function() {    
-  var _mode, _selectedColor = [], _lastPosition = [];
+  var _mode, _selectedColor = [], _colorToCopy = ''; _lastPosition = [];
   var _cWidth, _cHeight;
   var _isMac = false;
      
@@ -27,7 +27,8 @@ var Picker = (function() {
     var opts = options || {};
     var height = opts.height || _cHeight;
     var width = opts.width || _cWidth;
-    var cssText = opts.cssText || ''; 
+    var cssText = opts.cssText || '';
+    var attrs = opts.attrs; 
 
     var canvasContainer = byId(containerId);
     var canvas = document.createElement('canvas');
@@ -35,6 +36,9 @@ var Picker = (function() {
     canvas.width = width;
     canvas.height = height;
     canvas.style.cssText = cssText;
+    for(var a in attrs) {
+      canvas[a] = attrs[a];
+    }
     canvasContainer.appendChild(canvas); 
     return canvas;
   }
@@ -56,14 +60,11 @@ var Picker = (function() {
     var picker = (function(){
       var _width, _height, _tolerance;
       var _pointer, _color, _mask, _colorC;
+      var _currentMark = [0,0];
       
       var dynamic = {
         changeColor : function(evt) {
-          var xy = dynamic.getColorCoordinates(evt.layerX, evt.layerY);
-          dynamic.readColor(xy[0], xy[1]);
-          text.renderColor(_selectedColor);
-          var pxy = dynamic.getPickerCoordinates(evt.layerX, evt.layerY)
-          dynamic.drawMarker(pxy[0], pxy[1]);
+          renderColor(evt.layerX, evt.layerY);
         },
         
         readColor : function(x, y) {    
@@ -71,7 +72,8 @@ var Picker = (function() {
           var pixels = imgData.data;
           var index = (y * _width + x)*4;
           
-          _selectedColor = [pixels[index], pixels[index+1], pixels[index+2]];      
+          _selectedColor = [pixels[index], pixels[index+1], pixels[index+2]];
+          _lastPosition = [x, y];      
           return _selectedColor;
         },
         
@@ -88,14 +90,50 @@ var Picker = (function() {
         },
         
         drawMarker : function(x, y) {
-          if(!x || !y) return;
+          if(typeof x !== 'number' || typeof y !== 'number') return;
           var pContext = _pointer.getContext('2d');
           pContext.clearRect(0,0,_pointer.width, _pointer.height);
           pContext.beginPath();
           pContext.arc(x, y, 5, 0, Math.PI*2);
           pContext.stroke();
           pContext.closePath();
-          _lastPosition = [x, y];
+        }
+      }
+      function renderColor(x, y) {
+        x = Math.ceil(x), y = Math.ceil(y);
+        var xy = dynamic.getColorCoordinates(x, y);
+        dynamic.readColor(xy[0], xy[1]);
+        text.renderColor();
+        var pxy = dynamic.getPickerCoordinates(x, y);
+        _currentMark = [pxy[0], pxy[1]];
+        dynamic.drawMarker(pxy[0], pxy[1]);
+      }
+      
+      function keyboardNavigation(evt){
+        var unit = _color.width/360;
+        var speed = unit;
+        if(evt.keyCode >= 37 && evt.keyCode <= 40) {
+          evt.preventDefault(); 
+          if(evt.shiftKey) {
+            speed *= 5;
+          }
+          if(evt.keyCode === 37) {
+            _currentMark[0] -= speed;
+            _currentMark[0] = _currentMark[0] > 1 ? _currentMark[0] : 1;
+          }
+          if(evt.keyCode === 39) {
+            _currentMark[0] += speed;
+            _currentMark[0] = _currentMark[0] < _pointer.width ? _currentMark[0] : _pointer.width;
+          }
+          if(evt.keyCode === 38) {
+            _currentMark[1] -= speed;
+            _currentMark[1] = _currentMark[1] > 1 ? _currentMark[1] : 1;
+          }
+          if(evt.keyCode === 40) {
+            _currentMark[1] += speed;
+            _currentMark[1] = _currentMark[1] < _pointer.height ? _currentMark[1] : _pointer.height;
+          }
+          renderColor(_currentMark[0], _currentMark[1]);
         }
       }
       
@@ -189,13 +227,15 @@ var Picker = (function() {
           _width = width;
           _height = height;
           _tolerance = tolerance;
+          _currentMark = [tolerance, tolerance];
           
           _color = createCanvas(containerId, 'canvas-c', {cssText:'background:transparent;display:block;position:relative;top:0;left:0;z-index:2'});            
           _mask = createMask(containerId);
           _pointer = createCanvas(containerId, 'canvas-p',{
             width : _width + 2*_tolerance,
             height : _height + _tolerance,
-            cssText : 'background:transparent;position:absolute;top:-'+_tolerance+'px;left:-'+_tolerance+'px;z-index:3'
+            cssText : 'background:transparent;position:absolute;top:-'+_tolerance+'px;left:-'+_tolerance+'px;z-index:3',
+            attrs : {tabIndex : 0}
           });
           
           _colorC = _color.getContext('2d');
@@ -220,6 +260,8 @@ var Picker = (function() {
               this.removeEventListener('mousemove', changeColor, false);
             }, false);
           }, false);
+          
+           _pointer.addEventListener('keydown', keyboardNavigation, false);
         },
         renderColor :  function (hue) {
           _colorC.clearRect(0, 0, _width, _height);
@@ -234,9 +276,11 @@ var Picker = (function() {
     })();
     
     var slider = (function() { 
-      var _container, _s, _c, _width, _tmp;
+      var _container, _s, _c, _width, _tmp, _currentMark = 0, _unit = 1;
       
-      function markPoint(point, hue) {
+      function markPoint(point) {
+        //console.log(point);
+        _currentMark = point;
         _c.clearRect(0,0, _s.width, _s.height);
         _c.drawImage(_tmp, 0, 0, _s.width, _s.height) 
         _c.fillStyle = 'black';
@@ -251,16 +295,41 @@ var Picker = (function() {
       
       function setHue(evt) {
         var x = evt.layerX;
-        markPoint(x);
-        var h = x * _s.width/360;
-        
-        dynamic.renderColorAll({hue : h});
+        renderColor(x)
+      }
+      
+      function renderColor(point) {
+        var h = point * _unit;      
+        //console.log(h +" "+point);  
+        markPoint(point);
+        picker.renderColor(h);
+        text.renderColor();
+      }
+      
+      function keyboardNavigation(evt){
+        var speed = _unit
+        if(evt.keyCode === 37 || evt.keyCode === 39) { 
+          evt.preventDefault();
+          if(evt.shiftKey) {
+            speed *= 5;
+          }
+          if(evt.keyCode === 37) {
+            _currentMark -= speed;
+            _currentMark = _currentMark > 0 ? _currentMark : 0;
+          }
+          if(evt.keyCode === 39) {
+            _currentMark += speed;
+            _currentMark = _currentMark < _width ? _currentMark : _width;
+          }
+          renderColor(_currentMark)
+        }
       }
       
       return {
         create : function(sliderId, width, initHue) {
           _container = byId(sliderId);
           _container.style.width = _cWidth + 'px';
+          _width = width;
           
           _tmp = createCanvas(sliderId, 'slider-t', {
             width: 360,
@@ -276,10 +345,12 @@ var Picker = (function() {
           } 
           
           _s = createCanvas(sliderId, 'slider-c', {
-            width: _cWidth,
+            width: _width,
             height: 10,
-            cssText : 'position:relative;z-index:3'
+            cssText : 'position:relative;z-index:3',
+            attrs : {tabIndex : 0}
           }); 
+          _unit = 360/_s.width;
           _c = _s.getContext('2d');
         },
         
@@ -291,6 +362,7 @@ var Picker = (function() {
               this.removeEventListener('mousemove', setHue, false);
             }, false)
           }, false)
+          _s.addEventListener('keydown', keyboardNavigation, false);
         },
         
         renderColor : function(hue) {
@@ -304,10 +376,20 @@ var Picker = (function() {
       var _colorContainer, _colorInput;
       
       function changeMode(evt) { 
-        //console.log(key + '|' + evt.keyCode);
-        _mode = findMode('keyCode', evt.keyCode) || _mode;
-        text.renderColor();
+        console.log(evt.keyCode);
+        var newMode = findMode('keyCode', evt.keyCode)
+        if(evt.keyCode === 17 || evt.keyCode === 224) {
+          _colorInput.value = _colorToCopy;
+          _colorInput.focus();
+          _colorInput.select();
+        } 
+        if(newMode) {
+          _mode = newMode;
+          text.renderColor();
+        }
       }
+      
+      // cmd224 ctrl17
       
       function createInput() {
         var colorInput = document.createElement('input');
@@ -347,11 +429,11 @@ var Picker = (function() {
               p.className = ''
             }
           }
-          var colorToCopy = covertFromRGBtoString[_mode].apply(this, colorArr);
-          _colorContainer.style.background = colorToCopy;      
-          _colorInput.value = colorToCopy;
-          _colorInput.focus();
-          _colorInput.select();
+          _colorToCopy = covertFromRGBtoString[_mode].apply(this, colorArr);
+          _colorContainer.style.background = _colorToCopy;      
+          _colorInput.value = _colorToCopy;
+          //_colorInput.focus();
+          //_colorInput.select();
 
           var active = byId('color-' + _mode);
           active.className = 'active';
@@ -414,6 +496,7 @@ var Picker = (function() {
     
     return {
         init : function(options) {
+          document.body.focus();
           
           var opts = options || {};
           var sliderId = opts.sliderId || 'slider';
@@ -433,7 +516,7 @@ var Picker = (function() {
           picker.create(canvasId, _cWidth, _cHeight, tolerance);
           picker.bindEvents(); 
           
-          slider.create(sliderId, initHue);
+          slider.create(sliderId, _cWidth, initHue);
           slider.bindEvents(); 
           
           text.create(textBoxId, colorBoxId); 
