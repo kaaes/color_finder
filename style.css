@@ -1,0 +1,53 @@
+body {
+  font-family: 'Rock Salt', sans-serif; 
+  font-size: 1.5em; 
+  text-shadow: .1em .1em 0 #ddd; 
+  color: #333; 
+  background: #fffff0 url('grunge2.jpg')}
+#content {margin: 0 auto; position: relative; padding: 0 2em}
+#slider-c, #canvas-m {
+  display: block; 
+  margin: 0 auto; 
+  box-shadow: 0 0 0 2px rgba(255,255,240,1), 0 0 0 3px rgba(0,0,0,.3), 0 0 10px rgba(0,0,0,.5); 
+}
+#canvas {position: relative;}
+#canvas-c:active, #canvas:active {cursor: default;}
+#slider {clear: both; padding: 1em 0; position: relative}
+#slider-c {display: block;}
+h1 {font-size: 2em; margin-top: 0; margin-bottom: 0}
+h2 {margin-top: 0}
+a {color: steelblue}
+.author {font-size: .7em; clear: both; text-align: right}
+#color { 
+  height: 40px; width: 80%; 
+  border: solid 1px #fff;
+  box-shadow: 0 0 0 1px #666, 0 0 5px rgba(0,0,0,.5);
+}
+#color-text {margin-top: 1.5em}
+#color-text p {margin: .25em 0}
+#color-text .active {border-bottom: solid 2px red}
+#color-text .active:after {
+  content: '\2190 this one is active'; 
+  position: absolute; top:1em; right: -11em; 
+  -webkit-transform: rotate(5deg);
+  -moz-transform: rotate(5deg);
+}
+#color-input {position: fixed; top:0; left: -999em}
+#controls {float: left; margin-right: 2em}
+#info {width: 20em; float: left; line-height: 1.5em}
+#info p {margin-top: 0}
+.color-key {width: auto; display: inline-block}
+.color-key span {font-family: 'Special Elite'; background: rgba(200,200,200,.7)}
+#color-key-hsl {
+  -webkit-transform: rotate(-3deg);
+  -moz-transform: rotate(-3deg);
+}
+#color-key-rgb {
+  -webkit-transform: rotate(-2deg); 
+  -moz-transform: rotate(-2deg); 
+}
+#color-key-hex {
+  -webkit-transform: rotate(-1deg); 
+  -moz-transform: rotate(-1deg); 
+}
+#magnifier {width: 40px; height: 40px; border: solid 4px #000; position: absolute; top: 0; left: 0; z-index: 3; border-radius: 10em}
