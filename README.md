@@ -1,6 +1,19 @@
-This will be a color picker eventually.
+Mousless Color Picker
+---------------------
 
-2011-09-12 
+Color picker that doesn't force you to use mouse (cause I friggin hate selecting single inputs!)
 
-You can play with rainbow!
-Animated version sits in gh-pages branch because it's trippy
+To operate with keyboard use tab to get to the element, then arrow keys to navigate. Press shift to move cursor faster.
+
+Use letters to change the mode (rgb, hsl, hex) and cmd + c to copy it.
+
+Hipster bonus
+=============
+
+It doesn't use any images - everything is generated with JS
+
+To do
+=====
+* add alpha
+* add 'copied' indicator
+* add reverse mode - paste any color, translate it do other modes
