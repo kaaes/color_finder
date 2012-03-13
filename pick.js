@@ -374,11 +374,12 @@ var Picker = (function() {
     
     var text = (function(){
       var _colorContainer, _colorInput;
+      var _keys = [91, 93, 17, 224]; //91,93 - left&right cmd in chrome, 224 - both cmd in ff, 17 ctrl
       
       function changeMode(evt) { 
         console.log(evt.keyCode);
         var newMode = findMode('keyCode', evt.keyCode)
-        if(evt.keyCode === 17 || evt.keyCode === 224) {
+        if(_keys.indexOf(evt.keyCode) > -1) {
           _colorInput.value = _colorToCopy;
           _colorInput.focus();
           _colorInput.select();
@@ -388,8 +389,6 @@ var Picker = (function() {
           text.renderColor();
         }
       }
-      
-      // cmd224 ctrl17
       
       function createInput() {
         var colorInput = document.createElement('input');
